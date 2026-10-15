@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create your account, RecruitAI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230F1A2B%27/%3E%3Ccircle cx=%2750%27 cy=%2742%27 r=%2716%27 fill=%27none%27 stroke=%27%23E0933C%27 stroke-width=%278%27/%3E%3Cpath d=%27M50 58 L50 76%27 stroke=%27%23E0933C%27 stroke-width=%278%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="hero-bg auth-page">
+<div class="topbar">
+  <a href="index.html" class="brand">RecruitAI<span class="dot">.</span></a>
+  <div class="nav-links">
+    <a href="login.html" data-i18n="nav.login">Log in</a>
+  </div>
+</div>
+
+<div class="auth-stage">
+  <div class="auth-wrap auth-card">
+  <h1 data-i18n="auth.createTitle">Create your account</h1>
+  <div class="sub" data-i18n="auth.createSub">Tell us which side of the table you're on.</div>
+
+  <div class="role-toggle">
+    <button type="button" id="role-recruiter" class="active" data-i18n="auth.hiring">I'm hiring</button>
+    <button type="button" id="role-candidate" data-i18n="auth.jobHunting">I'm job hunting</button>
+  </div>
+
+  <form id="register-form">
+    <div class="field">
+      <label data-i18n="auth.fullName">Full name</label>
+      <input type="text" id="full_name" required>
+    </div>
+    <div class="field" id="company-field">
+      <label data-i18n="auth.companyName">Company name</label>
+      <input type="text" id="company_name">
+    </div>
+    <div class="field">
+      <label data-i18n="auth.email">Email</label>
+      <input type="email" id="email" required>
+    </div>
+    <div class="field">
+      <label data-i18n="auth.password">Password</label>
+      <input type="password" id="password" required minlength="4">
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;" data-i18n="nav.createAccount">Create account</button>
+    <div id="msg" class="form-msg"></div>
+  </form>
+
+  <div class="switch-line"><span data-i18n="auth.alreadyHave">Already have an account?</span> <a href="login.html" data-i18n="nav.login">Log in</a></div>
+  </div>
+</div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script>
+  let role = "recruiter";
+  const recruiterBtn = document.getElementById("role-recruiter");
+  const candidateBtn = document.getElementById("role-candidate");
+  const companyField = document.getElementById("company-field");
+
+  function setRole(r) {
+    role = r;
+    recruiterBtn.classList.toggle("active", r === "recruiter");
+    candidateBtn.classList.toggle("active", r === "candidate");
+    companyField.style.display = r === "recruiter" ? "block" : "none";
+  }
+  recruiterBtn.onclick = () => setRole("recruiter");
+  candidateBtn.onclick = () => setRole("candidate");
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("role") === "candidate") setRole("candidate");
+
+  document.getElementById("register-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+    msg.className = "form-msg";
+    try {
+      const payload = {
+        full_name: document.getElementById("full_name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        role: role,
+        company_name: document.getElementById("company_name").value,
+      };
+      const result = await Api.post("/api/register", payload);
+      const user = await Api.post("/api/login", { email: payload.email, password: payload.password });
+      Session.save(user);
+      msg.textContent = "Account created, redirecting…";
+      msg.className = "form-msg ok";
+      setTimeout(() => {
+        window.location.href = role === "recruiter" ? "dashboard.html" : "candidate.html";
+      }, 500);
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "form-msg error";
+    }
+  });
+</script>
+
+</body>
+</html>

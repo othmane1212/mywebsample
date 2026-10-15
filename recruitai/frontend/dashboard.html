@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard, RecruitAI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230F1A2B%27/%3E%3Ccircle cx=%2750%27 cy=%2742%27 r=%2716%27 fill=%27none%27 stroke=%27%23E0933C%27 stroke-width=%278%27/%3E%3Cpath d=%27M50 58 L50 76%27 stroke=%27%23E0933C%27 stroke-width=%278%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu" aria-expanded="false">
+    <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <div class="sidebar">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <a href="index.html" class="brand">RecruitAI<span class="dot">.</span></a>
+      <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="icon-row">
+      <button class="icon-btn" id="notif-btn" title="Notifications">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 3.5 1 5 1.6 6H4.4C5 13 6 11.5 6 8Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+        <span class="icon-badge" id="notif-badge" style="display:none;">0</span>
+      </button>
+      <div class="notif-dropdown" id="notif-dropdown"></div>
+      <a href="settings.html" class="icon-btn" title="Settings">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </a>
+      <button class="icon-btn" id="help-btn" title="Help">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 1.8-2.3 3.3"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+    <div class="who" data-i18n="common.signedInAs">Signed in as</div>
+    <strong id="who-name">—</strong>
+    <a class="side-link active" data-view="jobs" data-i18n="rec.yourJobs">Your jobs</a>
+    <a class="side-link" data-view="post" data-i18n="rec.postJob">Post a job</a>
+    <a class="side-link logout" id="logout" data-i18n="common.logout">Log out</a>
+  </div>
+
+  <div class="main">
+
+    <!-- JOBS + RANKED CANDIDATES VIEW -->
+    <div id="view-jobs">
+      <h1 data-i18n="rec.yourJobs">Your jobs</h1>
+      <div class="sub" data-i18n="rec.yourJobsSub">Every applicant is scored automatically the moment they apply.</div>
+      <div class="job-search-bar" id="rec-filter-bar">
+        <input type="text" id="rec-job-search" placeholder="Rechercher par titre, matière ou région…">
+      </div>
+      <div id="jobs-list"></div>
+    </div>
+
+    <!-- POST JOB VIEW -->
+    <div id="view-post" style="display:none;">
+      <h1 data-i18n="rec.postJob">Post a job</h1>
+      <div class="sub" data-i18n="rec.postJobSub">Mark the skills that are truly required, it changes how candidates are scored.</div>
+      <div class="panel">
+        <form id="job-form">
+          <div class="field">
+            <label data-i18n="rec.jobTitle">Job title</label>
+            <input type="text" id="title" required placeholder="e.g. Professeur de Mathématiques">
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label data-i18n="rec.location">Location</label>
+              <input type="text" id="location" placeholder="Rabat, Casablanca, ...">
+            </div>
+            <div class="field">
+              <label data-i18n="rec.minExp">Minimum experience (years)</label>
+              <input type="number" id="min_experience" min="0" step="0.5" value="0">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Matière / module enseigné</label>
+              <input type="text" id="subject" placeholder="ex: Mathématiques, Droit des affaires, Algorithmique avancée...">
+            </div>
+            <div class="field">
+              <label>Niveau / Cycle</label>
+              <select id="teaching_level">
+                <option value="">—</option>
+                <option>Primaire</option>
+                <option>Collège</option>
+                <option>Lycée</option>
+                <option>Université</option>
+                <option>Formation professionnelle</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Type de contrat</label>
+            <select id="contract_type">
+              <option value="contractuel">Contractuel</option>
+              <option value="titulaire">Titulaire (poste permanent, via concours)</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Région</label>
+              <select id="region">
+                <option value="">—</option>
+                <option>Tanger-Tétouan-Al Hoceïma</option>
+                <option>Oriental</option>
+                <option>Fès-Meknès</option>
+                <option>Rabat-Salé-Kénitra</option>
+                <option>Béni Mellal-Khénifra</option>
+                <option>Casablanca-Settat</option>
+                <option>Marrakech-Safi</option>
+                <option>Drâa-Tafilalet</option>
+                <option>Souss-Massa</option>
+                <option>Guelmim-Oued Noun</option>
+                <option>Laâyoune-Sakia El Hamra</option>
+                <option>Dakhla-Oued Ed-Dahab</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date limite de candidature</label>
+              <input type="date" id="application_deadline">
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="rec.description">Description</label>
+            <textarea id="description" required placeholder="What will this person actually do?"></textarea>
+          </div>
+          <div class="field">
+            <label data-i18n="rec.requirements">Requirements</label>
+            <textarea id="requirements" required placeholder="Fed directly into the AI matching engine, be specific."></textarea>
+          </div>
+          <div class="field">
+            <label data-i18n="rec.skills">Skills (press Enter to add)</label>
+            <div class="chip-input" id="skills-input"><input placeholder="Type a skill…"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="rec.requiredSkills">Which of those are required, not just nice-to-have? (press Enter to add)</label>
+            <div class="chip-input" id="required-input"><input placeholder="Type a required skill…"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="rec.languagesNeeded">Languages needed</label>
+            <div class="lang-field-row">
+              <input type="text" id="job-lang-name-input" class="lang-name-input" placeholder="e.g. French" autocomplete="off">
+              <select id="job-lang-level-input" class="lang-level-select">
+                <option value="basic" data-i18n="level.basic">Basic</option>
+                <option value="conversational" selected data-i18n="level.conversational">Conversational</option>
+                <option value="fluent" data-i18n="level.fluent">Fluent</option>
+                <option value="native" data-i18n="level.native">Native</option>
+              </select>
+              <button type="button" class="btn btn-small" id="add-job-lang-btn">Add</button>
+            </div>
+            <div class="lang-chip-list" id="job-languages-list"></div>
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="rec.postJobBtn">Post job</button>
+          <div id="post-msg" class="form-msg"></div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script>
+const user = Session.requireRole("recruiter");
+if (user) {
+  document.getElementById("who-name").textContent = user.full_name;
+  initNotifications(user.id);
+  initHelpModal("recruiter");
+}
+
+document.getElementById("logout").onclick = () => { Session.clear(); window.location.href = "index.html"; };
+
+// ---------- view switching ----------
+document.querySelectorAll(".side-link[data-view]").forEach(link => {
+  link.addEventListener("click", () => {
+    document.querySelectorAll(".side-link[data-view]").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+    ["jobs", "post"].forEach(v => {
+      document.getElementById("view-" + v).style.display = v === link.dataset.view ? "block" : "none";
+    });
+    if (link.dataset.view === "jobs") loadJobs();
+  });
+});
+
+// ---------- chip inputs ----------
+function setupChipInput(containerId) {
+  const container = document.getElementById(containerId);
+  const input = container.querySelector("input");
+  const chips = [];
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && input.value.trim()) {
+      e.preventDefault();
+      addChip(input.value.trim());
+      input.value = "";
+    }
+  });
+  function addChip(text) {
+    if (chips.includes(text)) return;
+    chips.push(text);
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.innerHTML = `${text} <button type="button">×</button>`;
+    chip.querySelector("button").onclick = () => {
+      chips.splice(chips.indexOf(text), 1);
+      chip.remove();
+    };
+    container.insertBefore(chip, input);
+  }
+  return { getAll: () => chips };
+}
+const skillsChips = setupChipInput("skills-input");
+const requiredChips = setupChipInput("required-input");
+
+// ---------- job languages ----------
+let jobLanguages = [];
+function renderJobLanguages() {
+  const container = document.getElementById("job-languages-list");
+  container.innerHTML = jobLanguages.map((l, i) => `
+    <span class="lang-chip">${l.name} <span class="lang-level-tag">${l.level}</span> <button type="button" data-idx="${i}">×</button></span>
+  `).join("");
+  container.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      jobLanguages.splice(parseInt(btn.dataset.idx), 1);
+      renderJobLanguages();
+    });
+  });
+}
+document.getElementById("add-job-lang-btn").addEventListener("click", () => {
+  const nameInput = document.getElementById("job-lang-name-input");
+  const levelInput = document.getElementById("job-lang-level-input");
+  const name = nameInput.value.trim();
+  if (!name) return;
+  if (jobLanguages.some(l => l.name.toLowerCase() === name.toLowerCase())) { nameInput.value = ""; return; }
+  jobLanguages.push({ name, level: levelInput.value });
+  nameInput.value = "";
+  renderJobLanguages();
+});
+
+// ---------- post job ----------
+document.getElementById("job-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("post-msg");
+  try {
+    await Api.post("/api/jobs", {
+      recruiter_id: user.id,
+      title: document.getElementById("title").value,
+      location: document.getElementById("location").value,
+      min_experience: parseFloat(document.getElementById("min_experience").value || 0),
+      subject: document.getElementById("subject").value,
+      teaching_level: document.getElementById("teaching_level").value,
+      contract_type: document.getElementById("contract_type").value,
+      region: document.getElementById("region").value,
+      application_deadline: document.getElementById("application_deadline").value,
+      description: document.getElementById("description").value,
+      requirements: document.getElementById("requirements").value,
+      skills: skillsChips.getAll(),
+      required_skills: requiredChips.getAll(),
+      languages: jobLanguages,
+    });
+    msg.textContent = "Job posted. Switch to \"Your jobs\" to see it.";
+    msg.className = "form-msg ok";
+    document.getElementById("job-form").reset();
+    jobLanguages = [];
+    renderJobLanguages();
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = "form-msg error";
+  }
+});
+
+// ---------- load jobs + ranked candidates ----------
+let allMyJobs = [];
+
+async function loadJobs() {
+  const container = document.getElementById("jobs-list");
+  container.innerHTML = skeletonRows(3);
+  allMyJobs = await Api.get(`/api/recruiters/${user.id}/jobs`);
+  renderMyJobs(allMyJobs);
+}
+
+function renderMyJobs(myJobs) {
+  const container = document.getElementById("jobs-list");
+
+  if (myJobs.length === 0) {
+    container.innerHTML = `<div class="empty-state panel">
+      <h3>${I18n.t("rec.noJobs")}</h3>
+      <p>${I18n.t("rec.noJobsText")}</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  for (const job of myJobs) {
+    const panel = document.createElement("div");
+    panel.className = "panel";
+    panel.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+        <h2>${job.title}</h2>
+        <a class="btn btn-small" href="/api/jobs/${job.id}/candidates/export.csv" download>Exporter en CSV</a>
+      </div>
+      <div class="meta" style="margin-bottom:14px; color:var(--muted); font-size:13.5px;">
+        ${job.location || "Location not specified"} · ${job.employment_type} · min. ${job.min_experience}y experience
+        ${job.subject ? " · " + job.subject : ""}${job.teaching_level ? " · " + job.teaching_level : ""} · ${job.contract_type === "titulaire" ? "Titulaire" : "Contractuel"}
+        ${job.region ? " · " + job.region : ""}${job.application_deadline ? " · Date limite : " + job.application_deadline : ""}
+      </div>
+      <div class="skills" style="margin-bottom:20px;">
+        ${job.skills.map(s => `<span class="tag">${s}</span>`).join("")}${(job.languages || []).map(l => `<span class="tag" style="background:var(--steel-soft);">${l.name} (${l.level})</span>`).join("")}
+      </div>
+      <div class="candidates-for-job" data-job-id="${job.id}">
+        ${skeletonRows(2)}
+      </div>
+    `;
+    container.appendChild(panel);
+    loadCandidatesForJob(job.id);
+  }
+}
+
+async function loadCandidatesForJob(jobId) {
+  const target = document.querySelector(`.candidates-for-job[data-job-id="${jobId}"]`);
+  try {
+    const ranked = await Api.get(`/api/jobs/${jobId}/candidates`); // defaults to actual applicants
+    if (ranked.length === 0) {
+      target.innerHTML = `<p style="color:var(--muted); font-size:14px;">${I18n.t("rec.noApplicants")}</p>`;
+      return;
+    }
+    const stages = ["applied", "shortlisted", "interview", "hired", "rejected"];
+    target.innerHTML = ranked.map(c => {
+      const avatar = c.profile_picture
+        ? `<img src="/photos/${c.profile_picture}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`
+        : `<div class="avatar">${initials(c.full_name)}</div>`;
+      const currentStatus = c.application_status || "applied";
+      return `
+        <div class="candidate-row" style="grid-template-columns:44px 1fr 56px;">
+          ${avatar}
+          <div>
+            <div class="cand-name">${c.full_name}</div>
+            <div class="cand-meta">${c.headline || ""} · ${c.experience_years}y exp${(c.languages || []).length ? " · " + c.languages.map(l => `${l.name} (${l.level})`).join(", ") : ""}</div>
+            <div class="cand-summary">${c.ai_summary}</div>
+            <div class="score-breakdown">
+              <div class="mini-bar"><span>Skills</span><div class="mini-bar-track"><div style="width:${c.skill_overlap}%"></div></div></div>
+              <div class="mini-bar"><span>Experience</span><div class="mini-bar-track"><div style="width:${c.experience_fit}%"></div></div></div>
+              <div class="mini-bar"><span>Languages</span><div class="mini-bar-track"><div style="width:${c.language_match}%"></div></div></div>
+              <div class="mini-bar"><span>Wording</span><div class="mini-bar-track"><div style="width:${c.text_similarity}%"></div></div></div>
+            </div>
+            <div class="pipeline-row">
+              ${stages.map(s => `<button class="stage-btn ${s === currentStatus ? "active" : ""}" data-app-id="${c.application_id}" data-status="${s}">${I18n.t("status." + s)}</button>`).join("")}
+            </div>
+          </div>
+          ${scoreRingSVG(c.match_score)}
+        </div>
+      `;
+    }).join("");
+
+    target.querySelectorAll(".stage-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const appId = btn.dataset.appId;
+        const status = btn.dataset.status;
+        target.querySelectorAll(`.stage-btn[data-app-id="${appId}"]`).forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        try {
+          const res = await fetch(`/api/applications/${appId}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          });
+          if (!res.ok) throw new Error("Failed to update status");
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    });
+  } catch (err) {
+    target.innerHTML = `<p style="color:var(--bad); font-size:14px;">${err.message}</p>`;
+  }
+}
+
+if (user) loadJobs();
+
+document.getElementById("rec-job-search").addEventListener("input", (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  const filtered = !query ? allMyJobs : allMyJobs.filter(job =>
+    job.title.toLowerCase().includes(query) ||
+    (job.subject || "").toLowerCase().includes(query) ||
+    (job.region || "").toLowerCase().includes(query)
+  );
+  renderMyJobs(filtered);
+});
+</script>
+
+</body>
+</html>
